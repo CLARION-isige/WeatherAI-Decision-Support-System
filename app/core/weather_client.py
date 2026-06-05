@@ -52,6 +52,12 @@ class WeatherAIClient:
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
         }
+
+    def _build_weatherai_url(self, path: str) -> str:
+        """Build an absolute WeatherAI upstream URL from WEATHERAI_BASE_URL and path."""
+        base_url = self.settings.weatherai_base_url.rstrip("/")
+        normalized_path = path if path.startswith("/") else f"/{path}"
+        return f"{base_url}{normalized_path}"
     
     @retry(
         stop=stop_after_attempt(3),
@@ -79,9 +85,10 @@ class WeatherAIClient:
             "lon": lon,
             "units": units
         }
-        
+
+        weather_url = self._build_weatherai_url("/v1/weather")
         response = await self._client.get(
-            "/v1/weather",
+            weather_url,
             headers=self._get_headers(),
             params=params
         )

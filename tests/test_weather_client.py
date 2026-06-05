@@ -66,6 +66,8 @@ class TestWeatherAIClient:
         assert isinstance(weather, WeatherData)
         assert weather.location.lat == -1.2921
         assert weather.location.lon == 36.8219
+        expected_url = f"{client.settings.weatherai_base_url.rstrip('/')}/v1/weather"
+        assert client._client.get.call_args.args[0] == expected_url
     
     @pytest.mark.asyncio
     async def test_get_current_weather_with_units(self, client, sample_weather_api_response):
@@ -80,6 +82,7 @@ class TestWeatherAIClient:
         
         assert weather is not None
         client._client.get.assert_called_once()
+        assert client._client.get.call_args.kwargs["params"]["units"] == "imperial"
     
     @pytest.mark.asyncio
     async def test_get_forecast_success(self, client, sample_forecast_api_response):

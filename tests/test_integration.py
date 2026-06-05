@@ -10,7 +10,6 @@ from app.core.weather_client import get_weather_client
 from app.core.decision_engine import DecisionEngine
 from app.ml.planting_model import PlantingPredictorModel
 from app.ml.risk_model import RiskAssessmentModel
-from app.repositories.firestore_repository import FirestoreDecisionRepository
 from app.core.models import (
     Location,
     CropType,
@@ -179,7 +178,6 @@ class TestFullWorkflowIntegration:
             risk_model=risk_model
         )
         
-        repository = FirestoreDecisionRepository()
         
         request = PlantingDecisionRequest(
             location=location,
