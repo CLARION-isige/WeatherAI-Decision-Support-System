@@ -6,17 +6,11 @@ import uuid
 from datetime import datetime, timezone
 import logging
 
-from ..ml.planting_model import PlantingPredictorModel
-from ..ml.risk_model import RiskAssessmentModel
-from ..ml.canopy_model import CanopyHealthModel
 from .models import (
     DecisionRequest,
     PlantingDecisionRequest,
     HarvestingDecisionRequest,
     DecisionResponse,
-    PlantingRecommendation,
-    HarvestingRecommendation,
-    RiskAssessment,
     ForecastData,
     WeatherData,
     Location,
@@ -128,33 +122,28 @@ class ForecastDataHandler(DecisionHandler):
 
 class RiskAssessmentHandler(DecisionHandler):
     """
-    Performs risk assessment using ML model.
+    Performs risk assessment using WeatherAI API.
     Third handler in the chain.
     """
     
-    def __init__(self, risk_model: RiskAssessmentModel):
+    def __init__(self, weather_client):
         super().__init__()
-        self.risk_model = risk_model
+        self.weather_client = weather_client
     
     async def handle(self, request: DecisionRequest, context: Dict[str, Any]) -> Dict[str, Any]:
-        """Perform risk assessment"""
-        logger.info("Performing risk assessment")
+        """Perform risk assessment using WeatherAI API"""
+        logger.info("Performing risk assessment via WeatherAI API")
         
-        forecast_data = context.get("forecast_data", [])
-        
-        if forecast_data:
-            try:
-                risk_assessment = self.risk_model.assess_risks(
-                    forecast_data=forecast_data,
-                    location=request.location
-                )
-                context["risk_assessment"] = risk_assessment
-                logger.info(f"Risk assessment completed: {risk_assessment.overall_risk}")
-            except Exception as e:
-                logger.error(f"Failed to perform risk assessment: {e}")
-                context["risk_assessment"] = None
-        else:
-            logger.warning("No forecast data available for risk assessment")
+        try:
+            risk_assessment_data = await self.weather_client.get_risk_assessment(
+                lat=request.location.lat,
+                lon=request.location.lon,
+                days=7
+            )
+            context["risk_assessment"] = risk_assessment_data
+            logger.info(f"Risk assessment completed via WeatherAI API")
+        except Exception as e:
+            logger.error(f"Failed to perform risk assessment via WeatherAI API: {e}")
             context["risk_assessment"] = None
         
         return await self._pass_to_next(request, context)
@@ -162,36 +151,32 @@ class RiskAssessmentHandler(DecisionHandler):
 
 class PlantingDecisionHandler(DecisionHandler):
     """
-    Generates planting recommendations.
+    Generates planting recommendations using WeatherAI API.
     Fourth handler in the chain (for planting decisions).
     """
     
-    def __init__(self, planting_model: PlantingPredictorModel):
+    def __init__(self, weather_client):
         super().__init__()
-        self.planting_model = planting_model
+        self.weather_client = weather_client
     
     async def handle(self, request: DecisionRequest, context: Dict[str, Any]) -> Dict[str, Any]:
-        """Generate planting recommendation"""
+        """Generate planting recommendation using WeatherAI API"""
         if not isinstance(request, PlantingDecisionRequest):
             return await self._pass_to_next(request, context)
         
-        logger.info(f"Generating planting recommendation for {request.crop}")
+        logger.info(f"Generating planting recommendation for {request.crop} via WeatherAI API")
         
-        forecast_data = context.get("forecast_data", [])
-        
-        if forecast_data:
-            try:
-                recommendation = self.planting_model.evaluate_planting_suitability(
-                    forecast_data=forecast_data,
-                    crop=request.crop
-                )
-                context["recommendation"] = recommendation
-                logger.info(f"Planting recommendation: {recommendation.recommended}")
-            except Exception as e:
-                logger.error(f"Failed to generate planting recommendation: {e}")
-                context["recommendation"] = None
-        else:
-            logger.warning("No forecast data available for planting recommendation")
+        try:
+            recommendation_data = await self.weather_client.get_planting_recommendation(
+                lat=request.location.lat,
+                lon=request.location.lon,
+                crop=request.crop.value,
+                days=7
+            )
+            context["recommendation"] = recommendation_data
+            logger.info(f"Planting recommendation completed via WeatherAI API")
+        except Exception as e:
+            logger.error(f"Failed to generate planting recommendation via WeatherAI API: {e}")
             context["recommendation"] = None
         
         return await self._pass_to_next(request, context)
@@ -199,40 +184,32 @@ class PlantingDecisionHandler(DecisionHandler):
 
 class HarvestingDecisionHandler(DecisionHandler):
     """
-    Generates harvesting recommendations.
+    Generates harvesting recommendations using WeatherAI API.
     Fourth handler in the chain (for harvesting decisions).
     """
     
+    def __init__(self, weather_client):
+        super().__init__()
+        self.weather_client = weather_client
+    
     async def handle(self, request: DecisionRequest, context: Dict[str, Any]) -> Dict[str, Any]:
-        """Generate harvesting recommendation"""
+        """Generate harvesting recommendation using WeatherAI API"""
         if not isinstance(request, HarvestingDecisionRequest):
             return await self._pass_to_next(request, context)
         
-        logger.info(f"Generating harvesting recommendation for {request.crop}")
+        logger.info(f"Generating harvesting recommendation for {request.crop} via WeatherAI API")
         
-        forecast_data = context.get("forecast_data", [])
-        risk_assessment = context.get("risk_assessment")
-        
-        if forecast_data and risk_assessment:
-            try:
-                # Simple harvesting logic based on risk assessment
-                recommended = risk_assessment.overall_risk.value in ["low", "medium"]
-                confidence = 0.8 if recommended else 0.4
-                
-                recommendation = HarvestingRecommendation(
-                    recommended=recommended,
-                    confidence=confidence,
-                    reason=f"Risk level is {risk_assessment.overall_risk.value}",
-                    risk_factors=[rf.type for rf in risk_assessment.risk_factors],
-                    weather_conditions=[f.condition.value for f in forecast_data[:3]]
-                )
-                context["recommendation"] = recommendation
-                logger.info(f"Harvesting recommendation: {recommendation.recommended}")
-            except Exception as e:
-                logger.error(f"Failed to generate harvesting recommendation: {e}")
-                context["recommendation"] = None
-        else:
-            logger.warning("Insufficient data for harvesting recommendation")
+        try:
+            recommendation_data = await self.weather_client.get_harvesting_recommendation(
+                lat=request.location.lat,
+                lon=request.location.lon,
+                crop=request.crop.value,
+                days=7
+            )
+            context["recommendation"] = recommendation_data
+            logger.info(f"Harvesting recommendation completed via WeatherAI API")
+        except Exception as e:
+            logger.error(f"Failed to generate harvesting recommendation via WeatherAI API: {e}")
             context["recommendation"] = None
         
         return await self._pass_to_next(request, context)
@@ -271,18 +248,14 @@ class DecisionEngine:
     Main decision engine that orchestrates the Chain of Responsibility.
     """
     
-    def __init__(self, weather_client, planting_model: PlantingPredictorModel, risk_model: RiskAssessmentModel):
+    def __init__(self, weather_client):
         """
         Initialize the decision engine with required components.
         
         Args:
             weather_client: WeatherAI API client
-            planting_model: Planting prediction model
-            risk_model: Risk assessment model
         """
         self.weather_client = weather_client
-        self.planting_model = planting_model
-        self.risk_model = risk_model
         
         # Build the chain of responsibility
         self._build_chain()
@@ -295,12 +268,12 @@ class DecisionEngine:
         # Add forecast data fetcher
         self.chain.set_next(ForecastDataHandler(self.weather_client))
         
-        # Add risk assessment
-        self.chain.set_next(RiskAssessmentHandler(self.risk_model))
+        # Add risk assessment using WeatherAI API
+        self.chain.set_next(RiskAssessmentHandler(self.weather_client))
         
-        # Add decision-specific handlers
-        planting_handler = PlantingDecisionHandler(self.planting_model)
-        harvesting_handler = HarvestingDecisionHandler()
+        # Add decision-specific handlers using WeatherAI API
+        planting_handler = PlantingDecisionHandler(self.weather_client)
+        harvesting_handler = HarvestingDecisionHandler(self.weather_client)
         
         # Both decision handlers point to response builder
         planting_handler.set_next(ResponseBuilderHandler())

@@ -208,6 +208,129 @@ class WeatherAIClient:
             
             return response.json()
     
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=2, max=10)
+    )
+    async def get_risk_assessment(
+        self,
+        lat: float,
+        lon: float,
+        days: int = 7,
+        units: str = "metric"
+    ) -> Dict[str, Any]:
+        """
+        Get AI-powered risk assessment from WeatherAI API.
+        
+        Args:
+            lat: Latitude
+            lon: Longitude
+            days: Number of days to assess
+            units: 'metric' or 'imperial'
+        
+        Returns:
+            Risk assessment dictionary
+        """
+        params = {
+            "lat": lat,
+            "lon": lon,
+            "days": days,
+            "units": units
+        }
+        
+        response = await self._client.get(
+            "/v1/decisions/risk-assessment",
+            headers=self._get_headers(),
+            params=params
+        )
+        response.raise_for_status()
+        
+        return response.json()
+    
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=2, max=10)
+    )
+    async def get_planting_recommendation(
+        self,
+        lat: float,
+        lon: float,
+        crop: str,
+        days: int = 7,
+        units: str = "metric"
+    ) -> Dict[str, Any]:
+        """
+        Get AI-powered planting recommendation from WeatherAI API.
+        
+        Args:
+            lat: Latitude
+            lon: Longitude
+            crop: Crop type
+            days: Number of days to analyze
+            units: 'metric' or 'imperial'
+        
+        Returns:
+            Planting recommendation dictionary
+        """
+        params = {
+            "lat": lat,
+            "lon": lon,
+            "crop": crop,
+            "days": days,
+            "units": units
+        }
+        
+        response = await self._client.get(
+            "/v1/decisions/planting",
+            headers=self._get_headers(),
+            params=params
+        )
+        response.raise_for_status()
+        
+        return response.json()
+    
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=2, max=10)
+    )
+    async def get_harvesting_recommendation(
+        self,
+        lat: float,
+        lon: float,
+        crop: str,
+        days: int = 7,
+        units: str = "metric"
+    ) -> Dict[str, Any]:
+        """
+        Get AI-powered harvesting recommendation from WeatherAI API.
+        
+        Args:
+            lat: Latitude
+            lon: Longitude
+            crop: Crop type
+            days: Number of days to analyze
+            units: 'metric' or 'imperial'
+        
+        Returns:
+            Harvesting recommendation dictionary
+        """
+        params = {
+            "lat": lat,
+            "lon": lon,
+            "crop": crop,
+            "days": days,
+            "units": units
+        }
+        
+        response = await self._client.get(
+            "/v1/decisions/harvesting",
+            headers=self._get_headers(),
+            params=params
+        )
+        response.raise_for_status()
+        
+        return response.json()
+    
     def _parse_weather_data(self, data: Dict[str, Any]) -> WeatherData:
         """Parse weather API response into WeatherData model"""
         location = Location(

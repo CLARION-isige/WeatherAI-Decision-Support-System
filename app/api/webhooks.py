@@ -14,16 +14,10 @@ from ..core.models import (
     PlantingDecisionRequest,
     HarvestingDecisionRequest
 )
-from ..ml.planting_model import PlantingPredictorModel
-from ..ml.risk_model import RiskAssessmentModel
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/v1/webhooks", tags=["webhooks"])
-
-# Initialize components
-planting_model = PlantingPredictorModel()
-risk_model = RiskAssessmentModel()
 
 # Webhook storage (in production, use database)
 webhook_subscriptions = {}

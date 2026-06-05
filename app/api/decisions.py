@@ -11,16 +11,10 @@ from ..core.models import (
     HarvestingDecisionRequest,
     DecisionResponse
 )
-from ..ml.planting_model import PlantingPredictorModel
-from ..ml.risk_model import RiskAssessmentModel
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/v1/decisions", tags=["decisions"])
-
-# Initialize ML models
-planting_model = PlantingPredictorModel()
-risk_model = RiskAssessmentModel()
 
 # Decision engine will be initialized on first request
 _decision_engine: DecisionEngine = None
@@ -31,9 +25,7 @@ def get_decision_engine(weather_client) -> DecisionEngine:
     global _decision_engine
     if _decision_engine is None:
         _decision_engine = DecisionEngine(
-            weather_client=weather_client,
-            planting_model=planting_model,
-            risk_model=risk_model
+            weather_client=weather_client
         )
     return _decision_engine
 
@@ -92,7 +84,7 @@ async def get_risk_assessment(
     weather_client = Depends(get_weather_client)
 ):
     """
-    Get risk assessment for agricultural activities.
+    Get risk assessment for agricultural activities using WeatherAI API.
     
     Args:
         request: Decision request with location and crop
@@ -101,17 +93,11 @@ async def get_risk_assessment(
         Risk assessment results
     """
     try:
-        # Get forecast data
-        forecast_data = await weather_client.get_forecast(
+        # Get risk assessment from WeatherAI API
+        risk_assessment = await weather_client.get_risk_assessment(
             lat=request.location.lat,
             lon=request.location.lon,
             days=7
-        )
-        
-        # Perform risk assessment
-        risk_assessment = risk_model.assess_risks(
-            forecast_data=forecast_data,
-            location=request.location
         )
         
         return risk_assessment
