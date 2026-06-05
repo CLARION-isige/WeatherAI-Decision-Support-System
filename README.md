@@ -355,5 +355,5 @@ WeatherAI/
 
 ## Acknowledgments
 
-- WeatherAI API for providing weather and forestry data
-- Firebase for cloud infrastructure
+- WeatherAI API for providing weather data
+
