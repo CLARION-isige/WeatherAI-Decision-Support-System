@@ -11,7 +11,7 @@ from ..ml.canopy_model import CanopyHealthModel
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1/trees", tags=["trees"])
+router = APIRouter(prefix="/v1/trees", tags=["trees"])
 
 # Initialize canopy health model
 canopy_model = CanopyHealthModel()

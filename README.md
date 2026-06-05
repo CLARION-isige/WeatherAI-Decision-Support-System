@@ -103,27 +103,27 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ## API Endpoints
 
 ### Weather Data
-- `GET /api/v1/weather/current` - Get current weather conditions
-- `GET /api/v1/weather/forecast` - Get weather forecast
-- `GET /api/v1/weather/insights` - Get AI-powered weather insights
+- `GET /v1/weather/current` - Get current weather conditions
+- `GET /v1/weather/forecast` - Get weather forecast
+- `GET /v1/weather/insights` - Get AI-powered weather insights
 
 ### Decision Support
-- `POST /api/v1/decisions/planting` - Get planting recommendations
-- `POST /api/v1/decisions/harvesting` - Get harvesting recommendations
-- `POST /api/v1/decisions/risk-assessment` - Get risk assessment
-- `GET /api/v1/decisions/history` - Get decision history
+- `POST /v1/decisions/planting` - Get planting recommendations
+- `POST /v1/decisions/harvesting` - Get harvesting recommendations
+- `POST /v1/decisions/risk-assessment` - Get risk assessment
+- `GET /v1/decisions/history` - Get decision history
 
 ### Tree Analysis
-- `POST /api/v1/trees/analyze` - Analyze tree canopy and health
-- `GET /api/v1/trees/health-trend` - Get canopy health trend analysis
-- `GET /api/v1/trees/health-score` - Calculate health score from metrics
+- `POST /v1/trees/analyze` - Analyze tree canopy and health
+- `GET /v1/trees/health-trend` - Get canopy health trend analysis
+- `GET /v1/trees/health-score` - Calculate health score from metrics
 
 ### Webhooks (Real-time Processing)
-- `POST /api/v1/webhooks/subscribe` - Subscribe to weather trigger events
-- `GET /api/v1/webhooks/subscriptions` - List active webhook subscriptions
-- `DELETE /api/v1/webhooks/subscriptions/{id}` - Delete webhook subscription
-- `POST /api/v1/webhooks/trigger` - Manually trigger webhook event (for testing)
-- `POST /api/v1/webhooks/weatherai-callback` - Receive callbacks from WeatherAI
+- `POST /v1/webhooks/subscribe` - Subscribe to weather trigger events
+- `GET /v1/webhooks/subscriptions` - List active webhook subscriptions
+- `DELETE /v1/webhooks/subscriptions/{id}` - Delete webhook subscription
+- `POST /v1/webhooks/trigger` - Manually trigger webhook event (for testing)
+- `POST /v1/webhooks/weatherai-callback` - Receive callbacks from WeatherAI
 
 ## ML Components
 
@@ -216,7 +216,7 @@ import httpx
 
 # Works with any location worldwide
 response = httpx.post(
-    "http://localhost:8000/api/v1/decisions/planting",
+    "http://localhost:8000/v1/decisions/planting",
     json={
         "location": {
             "lat": 40.7128,  # New York
@@ -236,7 +236,7 @@ import httpx
 
 # Subscribe to frost alerts for a location
 response = httpx.post(
-    "http://localhost:8000/api/v1/webhooks/subscribe",
+    "http://localhost:8000/v1/webhooks/subscribe",
     params={
         "url": "https://your-app.com/webhook",
         "lat": 40.7128,
@@ -252,7 +252,7 @@ subscription = response.json()
 
 ```python
 response = httpx.post(
-    "http://localhost:8000/api/v1/trees/analyze",
+    "http://localhost:8000/v1/trees/analyze",
     files={"image": open("farm.jpg", "rb")},
     data={
         "farmer_id": "F-001",

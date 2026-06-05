@@ -9,7 +9,7 @@ from ..core.models import WeatherData, ForecastData
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1/weather", tags=["weather"])
+router = APIRouter(prefix="/v1/weather", tags=["weather"])
 
 
 @router.get("/current", response_model=WeatherData)

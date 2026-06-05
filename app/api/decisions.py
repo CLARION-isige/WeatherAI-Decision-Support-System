@@ -16,7 +16,7 @@ from ..ml.risk_model import RiskAssessmentModel
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1/decisions", tags=["decisions"])
+router = APIRouter(prefix="/v1/decisions", tags=["decisions"])
 
 # Initialize ML models
 planting_model = PlantingPredictorModel()

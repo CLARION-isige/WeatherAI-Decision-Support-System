@@ -19,7 +19,7 @@ from ..ml.risk_model import RiskAssessmentModel
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1/webhooks", tags=["webhooks"])
+router = APIRouter(prefix="/v1/webhooks", tags=["webhooks"])
 
 # Initialize components
 planting_model = PlantingPredictorModel()
